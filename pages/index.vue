@@ -1,9 +1,10 @@
 <template>
   <div class="container">
-    <color-scheme-dropdown
+    <color-scheme-dropdown class="z-50"
       :selected-scheme="colorScheme"
       @update-color-scheme="updateColorScheme"
     ></color-scheme-dropdown>
+    <saturation-dropdown class="z-50" @update-saturation="updateSaturation" />
     <div class="grid" :style="gridStyle">
       <div
         v-for="(square, index) in totalSquares"
@@ -35,6 +36,7 @@ export default {
       squareSize: 100,
       colors: [],
       colorScheme: 'triadic',
+      saturation: 1,
     };
   },
   computed: {
@@ -67,10 +69,9 @@ export default {
       this.screenWidth = window.innerWidth;
       this.screenHeight = window.innerHeight;
     },
+ 
     generateColors() {
-  this.colors = [];
   const baseColor = randomHexColor();
-
   let colorPalette;
 
   switch (this.colorScheme) {
@@ -87,11 +88,26 @@ export default {
       colorPalette = generateTriadic(baseColor);
   }
 
-  for (let i = 0; i < 5; i++) {
-    const color = colorPalette[i % colorPalette.length];
-    this.colors.push(color);
+  if (
+    this.colors.length === 0 ||
+    this.colors[0] !== colorPalette[0] ||
+    this.saturation !== 1
+  ) {
+    this.colors = [];
+    for (let i = 0; i < 5; i++) {
+      const color = chroma(colorPalette[i % colorPalette.length]).hex();
+      this.colors.push(color);
+    }
+  }
+
+  for (let i = 0; i < this.colors.length; i++) {
+    const color = chroma(this.colors[i]).saturate(this.saturation).hex();
+    this.colors.splice(i, 1, color);
   }
 },
+
+
+
 
     squareStyle(index) {
       const color = this.colors[index % this.colors.length];
@@ -100,14 +116,25 @@ export default {
 
       return { backgroundColor: color, width, height };
     },
+
     updateColorScheme(newScheme) {
       this.colorScheme = newScheme;
+      this.generateColors();
+    },
+    updateSaturation(saturation) {
+    this.saturation = saturation;}
+  },
+
+  watch: {
+    colorScheme() {
+      this.generateColors();
+    },
+    saturation() {
       this.generateColors();
     },
   },
 };
 </script>
-
 
 <style scoped>
 .container {
@@ -124,4 +151,5 @@ export default {
 .square {
   border: 1px solid #ccc;
 }
+
 </style>

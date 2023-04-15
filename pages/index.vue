@@ -17,6 +17,15 @@
 <script>
 import chroma from 'chroma-js';
 
+import {
+  randomHexColor,
+  generateMonochromatic,
+  generateAnalogous,
+  generateComplementary,
+  generateTriadic
+} from '@/utils/colorUtils';
+
+
 export default {
 
   data() {
